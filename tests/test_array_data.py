@@ -1,7 +1,7 @@
 """ArrayData / interpolation / ArrayRegistry / Variables0Functions のテスト。
 
 実行方法:
-    cd E:\\Themal_Analysis\\Solver_Ver1.1
+    cd E:\\Themal_Analysis\\orbitherm-solver
     python -m pytest tests/test_array_data.py -v
     # または pytest なしの場合:
     python tests/test_array_data.py

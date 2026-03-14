@@ -1,7 +1,7 @@
 """スモークテスト: パッケージの基本インポートと入口関数の存在を確認する。
 
 実行方法:
-    cd E:\\Themal_Analysis\\Solver_Ver1.1
+    cd E:\\Themal_Analysis\\orbitherm-solver
     python -m pytest tests/test_smoke.py -v
 """
 from __future__ import annotations

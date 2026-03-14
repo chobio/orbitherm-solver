@@ -2,6 +2,7 @@
 # 入力ファイル選択・出力ファイル名指定で orbitherm_main.py を実行
 
 import os
+import re
 import sys
 import subprocess
 import threading
@@ -39,6 +40,8 @@ def run_thermal():
     log_area.see(tk.END)
 
     run_btn.config(state=tk.DISABLED)
+    progress_var.set(0)
+    progress_label_var.set("待機中...")
 
     def run_subprocess():
         try:
@@ -52,26 +55,64 @@ def run_thermal():
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                bufsize=1,
+                bufsize=0,
                 env=env,
             )
-            for line in proc.stdout:
-                def append(line=line):
-                    log_area.insert(tk.END, line)
+
+            # \r と \n の両方でバッファを分割して進捗行を検出する
+            buf = ""
+            _PROGRESS_RE = re.compile(r"計算進行状況.*?(\d+\.\d+)%.*?(\d+)/(\d+)")
+            while True:
+                ch = proc.stdout.read(1)
+                if not ch:
+                    break
+                if ch in ("\r", "\n"):
+                    line = buf
+                    buf = ""
+                    if not line:
+                        continue
+                    m = _PROGRESS_RE.search(line)
+                    if m:
+                        pct = float(m.group(1))
+                        cur = int(m.group(2))
+                        total = int(m.group(3))
+                        def update_progress(p=pct, c=cur, t=total):
+                            progress_var.set(p)
+                            progress_label_var.set(f"{p:.1f}%  ({c}/{t}ステップ)")
+                        root.after(0, update_progress)
+                    else:
+                        def append(l=line):
+                            log_area.insert(tk.END, l + "\n")
+                            log_area.see(tk.END)
+                            log_area.update_idletasks()
+                        root.after(0, append)
+                else:
+                    buf += ch
+
+            # バッファ残りを出力
+            if buf.strip():
+                def append_rest(l=buf):
+                    log_area.insert(tk.END, l + "\n")
                     log_area.see(tk.END)
-                    log_area.update_idletasks()
-                root.after(0, append)
+                root.after(0, append_rest)
+
             proc.wait()
+
             def done():
                 run_btn.config(state=tk.NORMAL)
                 if proc.returncode == 0:
+                    progress_var.set(100)
+                    progress_label_var.set("完了  100%")
                     messagebox.showinfo("完了", "解析が正常に完了しました。")
                 else:
+                    progress_label_var.set("エラー終了")
                     messagebox.showerror("エラー", f"終了コード: {proc.returncode}")
             root.after(0, done)
+
         except Exception as e:
             def fail():
                 run_btn.config(state=tk.NORMAL)
+                progress_label_var.set("エラー")
                 log_area.insert(tk.END, f"\nエラー: {e}\n")
                 messagebox.showerror("エラー", str(e))
             root.after(0, fail)
@@ -93,12 +134,12 @@ def browse_input():
 
 
 def main():
-    global root, inp_var, out_var, log_area, run_btn
+    global root, inp_var, out_var, log_area, run_btn, progress_var, progress_label_var
 
     root = tk.Tk()
     root.title("Orbitherm Solver")
-    root.minsize(520, 420)
-    root.geometry("620x480")
+    root.minsize(520, 460)
+    root.geometry("620x520")
 
     f = ttk.Frame(root, padding=12)
     f.pack(fill=tk.BOTH, expand=True)
@@ -118,13 +159,23 @@ def main():
 
     # 実行ボタン
     run_btn = ttk.Button(f, text="解析を実行", command=run_thermal)
-    run_btn.grid(row=5, column=0, columnspan=2, pady=(0, 12))
+    run_btn.grid(row=5, column=0, columnspan=2, pady=(0, 8))
+
+    # プログレスバー
+    progress_var = tk.DoubleVar(value=0)
+    progress_label_var = tk.StringVar(value="待機中...")
+    ttk.Progressbar(f, variable=progress_var, maximum=100, length=400).grid(
+        row=6, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 2)
+    )
+    ttk.Label(f, textvariable=progress_label_var, font=("", 8)).grid(
+        row=7, column=0, columnspan=2, sticky=tk.W, pady=(0, 8)
+    )
 
     # ログ
-    ttk.Label(f, text="ログ:").grid(row=6, column=0, sticky=tk.W, pady=(0, 4))
+    ttk.Label(f, text="ログ:").grid(row=8, column=0, sticky=tk.W, pady=(0, 4))
     log_area = scrolledtext.ScrolledText(f, height=14, width=70, wrap=tk.WORD, state=tk.NORMAL)
-    log_area.grid(row=7, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 0))
-    f.grid_rowconfigure(7, weight=1)
+    log_area.grid(row=9, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 0))
+    f.grid_rowconfigure(9, weight=1)
 
     root.mainloop()
 

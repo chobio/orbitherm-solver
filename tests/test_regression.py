@@ -7,7 +7,7 @@
 許容誤差は数値解法の近似誤差・反復収束誤差を考慮して設定する。
 
 実行方法:
-    cd E:\\Themal_Analysis\\Solver_Ver1.1
+    cd E:\\Themal_Analysis\\orbitherm-solver
     python -m pytest tests/test_regression.py -v
 """
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """Variables0Executor のテスト。
 
 実行方法:
-    cd E:\\Themal_Analysis\\Solver_Ver1.1
+    cd E:\\Themal_Analysis\\orbitherm-solver
     python -m pytest tests/test_variables0_executor.py -v
     # または:
     python tests/test_variables0_executor.py

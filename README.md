@@ -5,6 +5,75 @@
 SINDA/FLUINT ライクな有限差分法熱解析ソルバー（Python 実装）。  
 定常解析・過渡解析・配列参照・サブルーチン実行・ヒータ制御・時間依存熱入力に対応した計算エンジン。
 
+---
+
+## 主な機能とデータフォーマット
+
+### 入力ファイル（.inp）のセクション
+
+| セクション | 説明 |
+|---|---|
+| `HEADER NODE DATA` | 節点定義（熱容量・境界節点・算術節点） |
+| `HEADER CONDUCTOR DATA` | 熱コンダクタンス（導体・輻射） |
+| `HEADER SOURCE DATA` | 節点への熱源（定数・時変 ARRAY 補間） |
+| `HEADER ARRAY DATA` | 配列定義（doublet / singlet） |
+| `HEADER VARIABLES 0` | 時変制御式（QI() による動的熱入力） |
+| `HEADER HEATER DATA` | サーモスタット付きヒータ制御 |
+| `HEADER CONTROL DATA` | 解析設定（時間範囲・解法・ANALYSIS） |
+| `HEADER OPTIONS DATA` | 出力オプション（DQ・グラフ等） |
+
+### 配列データ（ARRAY DATA）
+
+- **doublet**: `ARR("配列名", x)` で線形補間して参照
+- **singlet**: `ARRI("配列名", i)` でインデックス参照
+
+```
+HEADER ARRAY DATA
+    SOLAR_HEAT,  0.0, 0.0,  500.0, 120.0,  1000.0, 0.0
+    POWER_MODE,  S,   5.0, 10.0, 15.0
+```
+
+### 時変制御式（VARIABLES 0）
+
+各タイムステップで `QI(ノード番号) = 式` により動的熱入力を設定。`TIME`・`ARR()`・`ARRI()` が利用可能。
+
+```
+HEADER VARIABLES 0
+    QSOLAR = ARR("SOLAR_HEAT", TIME)
+    QI(20) = QSOLAR
+```
+
+### ヒータ制御（HEATER DATA）
+
+ヒステリシス付き ON/OFF 制御。`SENSE` ノードの温度で ON/OFF を判定し、`APPLY` ノードに `POWER` [W] を加算。
+
+```
+HEADER HEATER DATA
+    BATT_HTR, SENSE=20, APPLY=20, ON=268.15, OFF=273.15, POWER=8.0
+```
+
+| キー | 説明 |
+|---|---|
+| SENSE | 温度監視ノード |
+| APPLY | 熱入力加算ノード |
+| ON | OFF→ON 閾値 [K]（この温度以下で ON） |
+| OFF | ON→OFF 閾値 [K]（この温度以上で OFF） |
+| POWER | ON 時の電力 [W] |
+| INIT | 初期状態（ON/OFF、省略時 OFF） |
+| ENABLED | 有効フラグ（YES/NO、省略時 YES） |
+
+> 詳細は `MANUAL.md` を参照。
+
+---
+
+## GUI（orbitherm_ui.py）
+
+- **起動**: `launch_ui.lnk` をダブルクリック、または `python orbitherm_ui.py`
+- **操作**: 入力ファイル（.inp）を選択、出力ベース名を任意で入力し「解析を実行」
+- **プログレスバー**: 過渡解析の計算進行状況をリアルタイムで表示（パーセント・ステップ数）
+
+---
+
 > **ブランド体系**
 > - 親ブランド: **Orbitherm**
 > - 本パッケージ: **Orbitherm Solver** （Python パッケージ名: `orbitherm_solver`、現行互換名: `thermal_solver`）
@@ -15,7 +84,7 @@ SINDA/FLUINT ライクな有限差分法熱解析ソルバー（Python 実装）
 ## ディレクトリ構成
 
 ```
-Solver_Ver1.1/
+orbitherm-solver/
 ├─ orbitherm_ui.py           # GUI 起動入口（tkinter）
 ├─ orbitherm_main.py         # CLI/互換ラッパー入口（subprocess 呼び出しターゲット）
 ├─ launch_ui.lnk             # Windows ショートカット
@@ -31,7 +100,10 @@ Solver_Ver1.1/
 │  │  ├─ config.py           # AnalysisConfig dataclass
 │  │  ├─ node.py             # NodeData dataclass
 │  │  ├─ thermal_model.py    # ThermalModel dataclass
+│  │  ├─ heater.py           # HeaterData dataclass（HEATER DATA 定義）
 │  │  └─ result.py           # SolverResult dataclass
+│  ├─ runtime/
+│  │  └─ heater_controller.py # HeaterController（ON/OFF 制御実行）
 │  ├─ io/
 │  │  ├─ input_parser.py     # .inp ファイルパーサー
 │  │  ├─ model_builder.py    # セクション→モデル変換
@@ -125,7 +197,7 @@ print(result.success)
 ## テスト実行
 
 ```powershell
-cd E:\Themal_Analysis\Solver_Ver1.1
+cd E:\Themal_Analysis\orbitherm-solver
 python -m pytest tests/ -v
 ```
 

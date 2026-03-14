@@ -4,7 +4,7 @@ parse_header_input() と build_model() の単体テスト。
 ソルバーは実行しない。数値ロジックには触れず、入力解釈のみを確認する。
 
 実行方法:
-    cd E:\\Themal_Analysis\\Solver_Ver1.1
+    cd E:\\Themal_Analysis\\orbitherm-solver
     python -m pytest tests/test_parser.py -v
 """
 from __future__ import annotations
