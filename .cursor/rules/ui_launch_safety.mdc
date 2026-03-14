@@ -1,0 +1,23 @@
+---
+description: Rules for UI and Windows launch safety
+globs:
+  - "orbitherm_ui.py"
+  - "orbitherm_main.py"
+  - "thermal_solver/app/**/*.py"
+  - "thermal_solver/cli/**/*.py"
+alwaysApply: true
+---
+
+# UI and Launch Safety Rules
+
+- Do not break the current launch chain:
+  - `launch_ui.lnk`
+  - `orbitherm_ui.py`
+  - subprocess launch of `orbitherm_main.py`
+  - delegation into `thermal_solver.app.run_case.run_case`
+- Preserve stdout/stderr behavior needed by the UI log display.
+- Be conservative with subprocess argument changes.
+- Avoid launch behavior that depends on the current working directory.
+- Prefer explicit file path resolution using `Path(__file__).resolve()`.
+- Do not move solver logic into the UI.
+- Do not make the UI depend directly on FreeCAD.

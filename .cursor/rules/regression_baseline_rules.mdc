@@ -1,0 +1,48 @@
+---
+description: Rules for regression baselines in parser and solver development
+globs:
+  - "thermal_solver/io/**/*.py"
+  - "thermal_solver/solvers/**/*.py"
+  - "tests/**/*"
+  - "examples/**/*"
+alwaysApply: true
+---
+
+# Regression Baseline Rules
+
+## Preserve known-good behavior
+
+Before changing parser or solver behavior, identify the current known-good behavior using:
+- existing tests
+- examples
+- small reference input cases
+
+## Add or update a regression check when behavior changes
+
+If you change parser logic, solver logic, or output-writing behavior:
+- add a regression test, or
+- update an existing regression test with a clear explanation
+
+## Keep numerical checks practical
+
+Use practical checks such as:
+- solver completes successfully
+- output files are created
+- representative node temperatures are within tolerance
+- transient output contains expected timestamps
+- steady solution converges within expected limits
+
+Do not rely on unnecessary exact matches for all values.
+
+## Do not bundle unrelated solver changes
+
+- Do not mix parser fixes, radiation changes, timestep changes, and output-format changes in one uncontrolled edit.
+- Keep regression-impacting changes narrow and easy to review.
+
+## Explain baseline updates
+
+If a regression baseline must be updated, clearly explain:
+- what previous baseline existed
+- why it is no longer correct
+- what the new expected behavior is
+- what risk the change introduces

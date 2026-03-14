@@ -1,0 +1,42 @@
+# case_radiation: 輻射コンダクタ有効ケース
+#
+# 目的: 輻射コンダクタのパース・定常解析での挙動確認
+#       コンダクタ番号が負 → radiation_conductors に登録されること
+#
+# モデル構成:
+#   MAIN.1 (未知節点, 初期温度200℃)
+#         | 輻射 R = 1.0 m^2 (コンダクタ番号 -10 → 輻射)
+#   MAIN.2 (境界節点, 20℃固定)
+#
+# 熱源: MAIN.1 に Q = 10 W
+#
+# 解析解:
+#   Q = R * sigma * (T1^4 - T2^4)
+#   T2 = 293 K, R*sigma = 5.67e-8 W/K^4
+#   10 = 5.67e-8 * (T1^4 - 293^4)
+#   T1^4 = 7.370e9 + 1.764e8 = 7.546e9
+#   T1 ≈ 294.7 K ≈ 21.7 ℃
+#
+# 回帰確認:
+#   - radiation_conductors が空でない
+#   - 20 < T_MAIN.1 < 25 ℃ (許容誤差 ±1 ℃)
+
+HEADER OPTIONS DATA
+    OUTPUT.GRAPH = FALSE
+
+HEADER CONTROL DATA
+    ANALYSIS = STEADY
+    STEADY_SOLVER = PICARD
+    STEFAN_BOLTZMANN = 5.67e-8
+
+HEADER NODE DATA, MAIN
+    1, 200.0, 1.0
+    -2, 20.0, 1.0
+
+HEADER CONDUCTOR DATA, MAIN
+    -10, 1, 2, 1.0
+
+HEADER SOURCE DATA, MAIN
+    1, 10.0
+
+END OF DATA

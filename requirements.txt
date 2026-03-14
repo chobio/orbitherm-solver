@@ -1,0 +1,11 @@
+# Orbitherm Solver — 依存パッケージ
+# Python 3.10+ を想定
+# パッケージ正式名: orbitherm-solver
+# 現行 Python パッケージ名: thermal_solver
+
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+
+# テスト用（任意）
+pytest>=7.0

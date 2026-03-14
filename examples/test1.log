@@ -1,0 +1,12 @@
+# 熱解析ログ 2026-03-13 19:16:34
+# 入力ファイル: examples/test1.inp
+
+プリプロセス完了
+算術節点: 1 節点
+解析種別: TRANSIENT
+過渡解析終了 経過時間: 0.11 秒
+定常収束: 判定済 max|dT|=0.000000℃ (閾値 0.01℃)
+出力: E:\Themal_Analysis\Solver_Ver1.1\examples\test1_mp.csv
+出力: E:\Themal_Analysis\Solver_Ver1.1\examples\test1.out
+出力: E:\Themal_Analysis\Solver_Ver1.1\examples\test1_mp.png
+解析完了

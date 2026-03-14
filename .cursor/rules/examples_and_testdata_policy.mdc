@@ -1,0 +1,80 @@
+---
+description: Rules for managing examples and regression test data for the thermal solver project
+globs:
+  - "**/*.py"
+  - "examples/**/*"
+  - "tests/**/*"
+alwaysApply: true
+---
+
+# Examples and Test Data Policy
+
+This project must maintain a small but stable set of reference input cases for regression safety.
+
+## Required reference cases
+
+Keep and maintain at least these reference cases:
+
+1. minimal steady-state case
+2. minimal transient case
+3. radiation-enabled case
+4. arithmetic-node case
+
+These cases should live under `examples/` and/or `tests/data/`.
+
+## Purpose of reference cases
+
+Reference cases are used to:
+- verify parser stability
+- verify solver execution still works
+- verify output files are still generated
+- detect accidental numerical regressions
+- provide small known-good inputs for future UI and FreeCAD integration testing
+
+## Keep cases small and deterministic
+
+- Prefer small node counts.
+- Prefer deterministic inputs with simple expected behavior.
+- Avoid unnecessarily large real-world models for regression tests.
+- Keep reference cases fast to run.
+
+## Do not silently modify reference cases
+
+- Do not edit reference input files casually.
+- If a reference case must change, explain:
+  - what changed
+  - why it changed
+  - what old behavior is no longer expected
+  - whether regression baselines must be updated
+
+## Prefer one concept per case
+
+Each reference case should primarily test one main concept:
+- steady solve
+- transient stepping
+- radiation handling
+- arithmetic node handling
+- boundary node behavior
+- output generation
+
+Avoid making every test case cover too many concepts at once.
+
+## Keep expected outputs lightweight
+
+- Prefer checking a few representative temperatures or output conditions.
+- Prefer tolerances over exact string matching for numerical values.
+- Avoid brittle checks on full file formatting unless formatting is the feature under test.
+
+## When fixing a bug
+
+When a parser or solver bug is fixed:
+- add a new reference case or
+- extend an existing test
+so the same bug is less likely to return.
+
+## Compatibility expectation
+
+Unless explicitly instructed otherwise:
+- existing reference cases should continue to run
+- their main expected behavior should remain valid
+- file naming and output generation should remain broadly compatible

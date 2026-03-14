@@ -1,0 +1,45 @@
+---
+description: Rules for preserving the execution contract of run_case and related APIs
+globs:
+  - "thermal_solver/app/**/*.py"
+  - "thermal_solver/io/**/*.py"
+  - "thermal_solver/solvers/**/*.py"
+  - "orbitherm_main.py"
+alwaysApply: true
+---
+
+# Solver Execution Contract Rules
+
+## Treat `run_case()` as a stable contract
+
+- `thermal_solver.app.run_case.run_case` is the main shared execution entry point.
+- UI, CLI, tests, and future FreeCAD integration should rely on this shared flow.
+- Do not create parallel execution paths unless explicitly requested.
+
+## Preserve the core responsibilities of `run_case()`
+
+`run_case()` should continue to handle the overall flow:
+1. input loading
+2. model building
+3. solver execution
+4. result writing
+5. optional plotting
+6. returning a result object
+
+## Keep argument evolution conservative
+
+- Add new arguments only when there is a clear need.
+- Prefer backward-compatible defaults.
+- Avoid changing argument meanings silently.
+- If changing behavior, document it in code comments or docstrings.
+
+## Keep result objects structured
+
+- Prefer returning structured result objects such as `SolverResult`.
+- Do not return ad-hoc inconsistent dictionaries from shared public execution paths unless legacy compatibility requires it.
+- If compatibility requires multiple forms, isolate the conversion logic.
+
+## Keep exceptions understandable
+
+- Raise errors with messages that help UI, CLI, and tests understand the problem.
+- Prefer actionable error messages over vague failures.

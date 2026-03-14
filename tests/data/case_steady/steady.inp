@@ -1,0 +1,37 @@
+# case_steady: 最小定常解析ケース
+#
+# 目的: PICARD 定常ソルバーの最小動作確認
+#
+# モデル構成:
+#   MAIN.1 (未知節点, 初期温度100℃, 熱容量1 J/K)
+#         | G = 2.0 W/K
+#   MAIN.2 (境界節点, 0℃固定)
+#
+# 熱源: MAIN.1 に Q = 10 W
+#
+# 解析解:
+#   定常: Q = G * (T1 - T2)
+#         10 = 2.0 * (T1 - 0)
+#         T1 = 5.0 ℃
+#
+# 回帰確認:
+#   - MAIN.1 の定常温度 ≈ 5.0 ℃ (許容誤差 ±0.1 ℃)
+
+HEADER OPTIONS DATA
+    OUTPUT.GRAPH = FALSE
+
+HEADER CONTROL DATA
+    ANALYSIS = STEADY
+    STEADY_SOLVER = PICARD
+
+HEADER NODE DATA, MAIN
+    1, 100.0, 1.0
+    -2, 0.0, 1.0
+
+HEADER CONDUCTOR DATA, MAIN
+    12, 1, 2, 2.0
+
+HEADER SOURCE DATA, MAIN
+    1, 10.0
+
+END OF DATA

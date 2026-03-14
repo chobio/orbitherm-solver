@@ -1,0 +1,180 @@
+---
+description: Core rules for maintaining and extending the Orbitherm Solver project safely
+globs:
+  - "**/*.py"
+alwaysApply: true
+---
+
+# Orbitherm Solver Project Rules
+
+This project is a SINDA-like thermal solver with:
+- a standalone Tkinter UI (`orbitherm_ui.py`)
+- a compatibility execution entry point (`orbitherm_main.py`)
+- a modular package (`thermal_solver/`, 将来: `orbitherm_solver/`)
+- future Orbitherm Studio (FreeCAD) integration
+
+Follow these rules when changing code.
+
+## Preserve launch and UI behavior
+
+- Do not break the current standalone execution flow from `orbitherm_ui.py`.
+- Do not break compatibility with `launch_ui.lnk`.
+- Do not rename or remove `orbitherm_ui.py` unless explicitly instructed.
+- Do not rename or remove `orbitherm_main.py` unless explicitly instructed.
+- Assume users may launch the app from Windows shortcuts and from non-project working directories.
+- Prefer robust path resolution based on `__file__` over current-working-directory assumptions.
+
+## Keep `orbitherm_ui.py` as a UI layer only
+
+- `orbitherm_ui.py` must remain a frontend layer.
+- Do not move solver logic into `orbitherm_ui.py`.
+- `orbitherm_ui.py` should primarily handle:
+  - file selection
+  - user options
+  - subprocess launch or service invocation
+  - log display
+  - completion/error notification
+
+## Keep `orbitherm_main.py` as a compatibility wrapper
+
+- `orbitherm_main.py` must remain a backward-compatible entry point.
+- Keep it thin.
+- New business logic should be added under `thermal_solver/`, not into `orbitherm_main.py`.
+- When refactoring, move logic out of `orbitherm_main.py` and let it call package modules.
+
+## Respect the package structure
+
+Preferred responsibilities:
+
+- `thermal_solver/app/`
+  - orchestration
+  - shared execution flow
+  - service layer for UI / CLI / Orbitherm Studio callers
+
+- `thermal_solver/model/`
+  - dataclasses
+  - model definitions
+  - config objects
+  - result structures
+
+- `thermal_solver/io/`
+  - input parsing
+  - model construction
+  - file writing
+  - logging helpers
+
+- `thermal_solver/solvers/`
+  - numerical methods
+  - steady/transient/implicit/radiation/arithmetic logic
+
+- `thermal_solver/post/`
+  - plotting
+  - post-processing helpers
+
+- `thermal_solver/freecad/`
+  - Orbitherm Studio bridge code only
+
+## Never mix FreeCAD-specific code into the pure solver core
+
+- Core solver modules must remain usable without FreeCAD installed.
+- Do not import FreeCAD modules into core solver modules.
+- Treat FreeCAD as an adapter layer only.
+
+## Prefer gradual refactoring over large rewrites
+
+- Do not perform broad rewrites unless explicitly requested.
+- Prefer small, safe, reviewable refactors.
+- Preserve behavior first, improve architecture second.
+- Extract helper functions before redesigning behavior.
+- When uncertain, keep compatibility and add TODO notes.
+
+## Preserve input/output compatibility
+
+- Existing input file behavior should be preserved unless explicitly told to change it.
+- Existing output file names, formats, and general behavior should remain compatible unless explicitly requested otherwise.
+- If output behavior must change, minimize the change and document it clearly.
+
+## Use shared execution paths
+
+- Shared execution flow must go through `thermal_solver.app.run_case.run_case`.
+- UI, CLI, and future Orbitherm Studio integrations should converge on the same execution path.
+- Avoid duplicating solver execution flows.
+
+## Improve structure with dataclasses where practical
+
+Use dataclasses when helpful for:
+- analysis configuration
+- thermal model container
+- solver results
+
+But:
+- do not force a full rewrite just to introduce dataclasses
+- do not break legacy dictionary-based logic unnecessarily
+- migrate gradually and safely
+
+## Maintain numerical correctness
+
+This is scientific and engineering code.
+
+- Do not change numerical behavior casually.
+- Do not alter convergence logic, timestep behavior, boundary handling, or radiation math without a clear reason.
+- Preserve formulas and iteration behavior during refactoring.
+- Prefer extracting numerical logic verbatim first, then improving later.
+- Add comments when modifying numerical code.
+
+## Keep code readable and practical
+
+- Prefer small, focused functions.
+- Avoid unnecessary frameworks and over-abstraction.
+- Avoid needless inheritance.
+- Favor clear procedural orchestration with a clean package structure.
+- Use descriptive names consistent with thermal analysis terminology.
+
+## Use type hints where practical
+
+- Add type hints to new or refactored functions when reasonably possible.
+- Prioritize annotations on public functions, dataclasses, and orchestration APIs.
+- Do not slow safe refactoring by forcing exhaustive typing of all legacy details.
+
+## Keep logging UI-friendly
+
+- Logging must remain compatible with text output captured by the UI.
+- `print`-compatible logging or injectable logger callables are acceptable.
+- Avoid logging systems that make subprocess log capture difficult unless explicitly requested.
+
+## Be careful with multiprocessing and subprocess behavior
+
+- Assume Windows-specific multiprocessing behavior matters.
+- Do not casually change process spawning patterns.
+- Keep `if __name__ == "__main__":` guards where needed.
+- Prefer conservative changes around subprocess launch and main entry points.
+
+## Add smoke tests when possible
+
+- Prefer lightweight tests for:
+  - package import
+  - entry point import
+  - parser import
+  - `run_case` import or smoke execution
+
+## Protect backward compatibility first
+
+In ambiguous situations, choose the option that:
+1. keeps `orbitherm_ui.py` working
+2. keeps `orbitherm_main.py` callable
+3. keeps solver logic reusable
+4. improves modularity gradually
+
+## Do not silently delete legacy code with unclear purpose
+
+- If legacy code appears unused but its purpose is uncertain, do not delete it aggressively.
+- Prefer moving, wrapping, or marking with TODO comments.
+- Only remove old code when the replacement is clearly in place and compatibility is verified.
+
+## Prefer explicit migration TODO comments
+
+Use concrete TODO comments such as:
+- TODO: migrate remaining parser logic here
+- TODO: replace legacy dict structure with ThermalModel gradually
+- TODO: isolate plotting configuration
+- TODO: Orbitherm Studio adapter integration point

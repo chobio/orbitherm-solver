@@ -1,0 +1,21 @@
+---
+description: Numerical safety rules for solver code
+globs:
+  - "thermal_solver/solvers/**/*.py"
+  - "thermal_solver/io/**/*.py"
+  - "orbitherm_main.py"
+alwaysApply: true
+---
+
+# Numerical Safety Rules
+
+- Do not change formulas, convergence criteria, timestep logic, boundary condition behavior, or radiation handling without explicit justification.
+- When moving numerical code, preserve calculations exactly first.
+- Refactor structure before optimizing algorithms.
+- If a numerical change is necessary, clearly state:
+  - what changed
+  - why it changed
+  - expected effect
+  - compatibility risk
+- Prefer extracting exact logic into helper functions before redesigning it.
+- Avoid combining multiple numerical behavior changes into one edit.

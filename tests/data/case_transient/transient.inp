@@ -1,0 +1,43 @@
+# case_transient: 最小過渡解析ケース
+#
+# 目的: 過渡解析（BACKWARD 陰解法）のタイムステップ・記録確認
+#
+# モデル構成:
+#   MAIN.1 (未知節点, 初期温度100℃, 熱容量 C=1 J/K)
+#         | G = 0.5 W/K
+#   MAIN.2 (境界節点, 0℃固定)
+#
+# 熱源: なし
+#
+# 解析解（連続）:
+#   τ = C/G = 1.0/0.5 = 2 s
+#   T(t) = 100 * exp(-t/2)
+#   T(10) ≈ 0.67 ℃
+#
+# BACKWARD 陰解法（dt=1s）の近似値:
+#   各ステップ: T(n+1) = T(n) / (1 + G*dt/C) = T(n) / 1.5
+#   T(5s) ≈ 13.2 ℃,  T(10s) ≈ 1.7 ℃
+#
+# 回帰確認:
+#   - record_times = [0.0, 5.0, 10.0]
+#   - T(0) ≈ 100 ℃, T(5) < T(0), T(10) < T(5)
+#   - 0 < T(10) < 50 ℃
+
+HEADER OPTIONS DATA
+    OUTPUT.GRAPH = FALSE
+
+HEADER CONTROL DATA
+    TIMESTART = 0.0
+    TIMEND = 10.0
+    DT = 5.0
+    TIME_STEP = 1.0
+    TRANSIENT_METHOD = BACKWARD
+
+HEADER NODE DATA, MAIN
+    1, 100.0, 1.0
+    -2, 0.0, 1.0
+
+HEADER CONDUCTOR DATA, MAIN
+    12, 1, 2, 0.5
+
+END OF DATA

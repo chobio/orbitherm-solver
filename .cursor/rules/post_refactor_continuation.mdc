@@ -1,0 +1,72 @@
+---
+description: Continuation rules after the initial modular refactor
+globs:
+  - "**/*.py"
+alwaysApply: true
+---
+
+# Post-Refactor Continuation Rules
+
+## Respect the new structure
+
+- Add new logic under `thermal_solver/`, not into `orbitherm_main.py`.
+- `orbitherm_main.py` must remain a thin compatibility wrapper.
+- `orbitherm_ui.py` must remain a UI/frontend layer only.
+
+## Treat `run_case()` as the execution contract
+
+- Shared execution flow must go through `thermal_solver.app.run_case.run_case`.
+- Do not create separate duplicated execution pipelines for UI, CLI, or future FreeCAD integration.
+- If new options are added, extend `run_case()` or its config objects consistently.
+
+## Preserve backward compatibility
+
+- Do not break `orbitherm_ui.py` subprocess execution.
+- Do not break existing output file generation unless explicitly requested.
+- Do not rename launch-related files without explicit instruction.
+
+## Add tests when changing parser or solver behavior
+
+- Any change to parsing logic should add or update parser tests.
+- Any change to numerical solver behavior should add or update a small regression test.
+- Prefer small deterministic sample cases in `examples/` or `tests/data/`.
+
+## Prefer regression safety over redesign
+
+- Do not rewrite large working sections just to improve style.
+- Extract, wrap, or add helper functions before redesigning stable code.
+- Keep numerical behavior unchanged unless a deliberate fix is requested.
+
+## Keep numerical changes explicit
+
+If changing formulas, convergence logic, timestep rules, or radiation handling, explain:
+- what changed
+- why it changed
+- expected numerical effect
+- backward compatibility risk
+
+## Keep FreeCAD optional
+
+- Do not add mandatory FreeCAD imports to core modules.
+- FreeCAD-specific code must remain isolated under `thermal_solver/freecad/`.
+
+## Prefer path-safe Windows behavior
+
+- Avoid current-working-directory assumptions.
+- Use `__file__`-based resolution where launch stability matters.
+- Preserve compatibility with shortcut-based execution.
+
+## Strengthen the model layer gradually
+
+- Prefer using dataclasses and structured models in new code.
+- Do not force immediate full migration of all legacy dict-based logic.
+- Migrate incrementally and preserve behavior.
+
+## Report changes clearly
+
+When finishing a task, report in this order:
+1. files changed
+2. preserved behavior
+3. new behavior
+4. tests added or updated
+5. remaining risks or TODOs

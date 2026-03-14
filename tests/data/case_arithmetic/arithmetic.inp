@@ -1,0 +1,48 @@
+# case_arithmetic: 算術節点（C < 0）ケース
+#
+# 目的: 熱容量が負のノードが算術節点として扱われること
+#       算術節点の温度が熱収支=0 から正しく求まること
+#
+# モデル構成:
+#   MAIN.4 (境界, 0℃)
+#         | G = 2.0
+#   MAIN.1 (通常節点, 初期温度50℃, C=100 J/K)
+#         | G = 2.0
+#   MAIN.2 (算術節点 C<0, 初期温度25℃)
+#         | G = 2.0
+#   MAIN.3 (境界, 100℃)
+#
+# 熱源: なし
+#
+# 解析解（定常）:
+#   MAIN.1 の熱収支: G*(T4-T1) + G*(T2-T1) = 0
+#       0 - T1 + T2 - T1 = 0  →  T2 = 2*T1    ...(i)
+#   MAIN.2 の熱収支 = 0: G*(T1-T2) + G*(T3-T2) = 0
+#       T1 - T2 + 100 - T2 = 0  →  T1 - 2*T2 = -100  ...(ii)
+#   (i)を(ii)に代入: T1 - 4*T1 = -100  →  T1 = 100/3 ≈ 33.33 ℃
+#                                           T2 = 200/3 ≈ 66.67 ℃
+#
+# 回帰確認:
+#   - arithmetic_nodes = {MAIN.2}
+#   - T_MAIN.1 ≈ 33.33 ℃ (許容誤差 ±0.5 ℃)
+#   - T_MAIN.2 ≈ 66.67 ℃ (許容誤差 ±0.5 ℃)
+
+HEADER OPTIONS DATA
+    OUTPUT.GRAPH = FALSE
+
+HEADER CONTROL DATA
+    ANALYSIS = STEADY
+    STEADY_SOLVER = PICARD
+
+HEADER NODE DATA, MAIN
+    1, 50.0, 100.0
+    2, 25.0, -1.0
+    -3, 100.0, 1.0
+    -4, 0.0, 1.0
+
+HEADER CONDUCTOR DATA, MAIN
+    41, 4, 1, 2.0
+    12, 1, 2, 2.0
+    23, 2, 3, 2.0
+
+END OF DATA

@@ -1,0 +1,34 @@
+---
+description: Rules for future FreeCAD integration boundaries
+globs:
+  - "thermal_solver/freecad/**/*.py"
+  - "thermal_solver/**/*.py"
+alwaysApply: true
+---
+
+# FreeCAD Future Boundary Rules
+
+## Keep FreeCAD optional
+
+- FreeCAD integration is planned, but the core solver must remain usable without FreeCAD installed.
+- Do not add mandatory FreeCAD imports to core modules.
+- Any FreeCAD-specific dependency must be isolated under `thermal_solver/freecad/`.
+
+## Treat FreeCAD as an adapter layer
+
+FreeCAD code should primarily handle:
+- extracting geometry or metadata from FreeCAD
+- mapping FreeCAD data into `ThermalModel` or related core structures
+- launching shared execution through `run_case()` or equivalent shared service APIs
+- mapping results back to FreeCAD objects for visualization
+
+## Do not embed solver logic into FreeCAD adapters
+
+- Numerical logic belongs in `thermal_solver/solvers/`.
+- Parsing and model construction belong in core package modules.
+- FreeCAD adapters should translate data, not own the solver.
+
+## Preserve headless usability
+
+- Core solver code should remain testable and runnable in plain Python.
+- Do not make core imports fail just because FreeCAD is unavailable.

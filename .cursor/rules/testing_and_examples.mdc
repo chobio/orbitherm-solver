@@ -1,0 +1,22 @@
+---
+description: Rules for tests, examples, and regression protection
+globs:
+  - "**/*.py"
+  - "tests/**/*"
+  - "examples/**/*"
+alwaysApply: true
+---
+
+# Testing and Examples Rules
+
+- Prefer adding a small regression test before changing parser or solver behavior.
+- Keep at least one minimal steady-state sample case.
+- Keep at least one minimal transient sample case.
+- Prefer deterministic examples with small node counts.
+- Tests should focus on:
+  - imports
+  - parser stability
+  - output file creation
+  - representative node temperatures within tolerance
+- Avoid overly fragile tests based on exact formatting unless formatting is the feature being tested.
+- When a bug is fixed, add or update a test or sample to prevent recurrence.

@@ -1,0 +1,47 @@
+# ========================== 入力ファイルサンプル（コメント付き） ==========================
+
+HEADER OPTIONS DATA
+    OUTPUT.DQ = TRUE         # 各ノードの熱流出入量（dq）を出力する
+    OUTPUT.GRAPH = TRUE      # グラフ（温度推移）を自動で描画・保存する
+
+HEADER CONTROL DATA
+    TIMESTART = 0.0          # 計算開始時刻 [秒]
+    TIMEND = 600.0           # 計算終了時刻 [秒]
+    DT = 100.0                # 結果出力の間隔 [秒]
+    TIME_STEP = 0.1          # 計算のタイムステップ [秒]
+    STEFAN_BOLTZMANN = 5.67e-8  # ステファン・ボルツマン定数
+#   ANALYSIS = STEADY       # 定常解析にする場合は有効化（省略時は TRANSIENT）
+#   STEADY_SOLVER = CNFRW  # 定常: PICARD（線形化反復） or CNFRW（ニュートン法）
+   TRANSIENT_METHOD = BACKWARD  # 過渡: EXPLICIT | CRANK_NICOLSON | BACKWARD
+
+# --- サブグループSUB1のノード定義（ノード番号, 初期温度[℃], 熱容量[J/K]） ---
+HEADER NODE DATA, SUB1
+    10, 20.0, 1.0           # ノード10：20℃, 熱容量10J/K
+    15, 20.0, 1.0           # ノード15：20℃, 熱容量10J/K
+
+# --- サブグループSUB2のノード定義 ---
+# 熱容量が負（例: -1.0）の節点は算術節点（熱容量ゼロ、熱収支=0で温度を求める）
+HEADER NODE DATA, SUB2
+    20, 20.0, -1.0           # ノード20：20℃, 熱容量1 J/K
+    -99, -20.0, BOUNDARY      # ノード99：-20℃で固定（境界条件ノード）
+
+# --- サブグループSUB1内の熱コンダクタンス定義（導体番号, ノード1, ノード2, コンダクタンス[W/K]） ---
+HEADER CONDUCTOR DATA, SUB1
+    1015, 10, 15, 1.0        # ノード10と15を結ぶ、熱コンダクタンス5.0
+
+# --- グローバルな熱コンダクタンス定義（サブグループ間や境界ノード含む） ---
+HEADER CONDUCTOR DATA, GLOBAL
+    1520, SUB1.15, SUB2.20, 1.0   # SUB1.15とSUB2.20を結ぶ、熱コンダクタンス5.0
+    -2099, SUB2.20, SUB2.99,0.1*0.1*0.85   # SUB2.20とSUB2.99(境界)を結ぶ、熱コンダクタンス0.1
+
+# --- SUB1ノードへの熱源定義 ---
+HEADER SOURCE DATA, SUB1
+ #   10, ARRAY, LINEAR, (0, 10.0), (60, 5.0), (120, 10.0)   # （例）線形補間の可変熱源（コメントアウト中）
+ #  10, ARRAY, STEP, (0, 5.0), (60, 15.0), (90, 5.0)        # ステップ的に変化する熱源 [W]
+    10, 1.0                                                  # ノード15は熱源なし
+
+# --- SUB2ノードへの熱源定義 ---
+HEADER SOURCE DATA, SUB2
+ #   20, ARRAY, STEP, (0, 5.0), (60, 15.0), (90, 5.0)        # （例）コメントアウト中（必要なら有効化）
+
+END OF DATA

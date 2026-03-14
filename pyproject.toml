@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "orbitherm-solver"
+version = "1.1.0"
+description = "Orbitherm Solver — SINDA-like thermal network solver for steady-state and transient analysis."
+authors = [
+    { name = "Orbitherm Project" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+keywords = ["thermal", "solver", "SINDA", "spacecraft", "heat transfer", "orbitherm"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+# CLI エントリポイント: orbitherm-solver コマンドとして登録
+# pip install -e . 後に使用可能
+orbitherm-solver = "thermal_solver.cli.main:main"
+
+[tool.setuptools.packages.find]
+# 現行パッケージ名 thermal_solver を orbitherm_solver に移行するまでの過渡期設定
+# TODO: orbitherm_solver/ ディレクトリへの移行後にここを更新する
+include = ["thermal_solver*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+# ── 将来の移行メモ ──────────────────────────────────────────────────────────
+# 内部パッケージを orbitherm_solver/ にリネームする際:
+# 1. thermal_solver/ を orbitherm_solver/ にコピー
+# 2. thermal_solver/__init__.py に互換 import ラッパーを残す
+# 3. [tool.setuptools.packages.find] の include を更新
+# 4. [project.scripts] のターゲットを orbitherm_solver.cli.main:main に変更
